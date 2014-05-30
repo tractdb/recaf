@@ -1,0 +1,23 @@
+{
+  "name": "RECAF",
+  "version": "0.0.0",
+  "description": " ",
+  "main": " ",
+  "dependencies": {
+    "angular": "1.2.x",
+    "ionic": "1.x",
+    "phonegap": "3.4.x"
+  },
+  "devDependencies": {},
+  "scripts": {},
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tractdb/recaf.git"
+  },
+  "author": " ",
+  "license": " ",
+  "bugs": {
+    "url": "https://github.com/tractdb/recaf/issues"
+  },
+  "homepage": "https://github.com/tractdb/recaf"
+}
