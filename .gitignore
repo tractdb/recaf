@@ -1,0 +1,5 @@
+# PyCharm settings
+.idea
+
+# Node environment
+node_modules
