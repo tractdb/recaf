@@ -5,6 +5,7 @@
   "main": " ",
   "dependencies": {
     "angular": "1.2.x",
+    "cordova": "3.5.x",
     "ionic": "1.x",
     "phonegap": "3.4.x"
   },
