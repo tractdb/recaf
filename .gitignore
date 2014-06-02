@@ -3,3 +3,15 @@
 
 # Node environment
 node_modules
+
+# Builds
+builds
+
+# Apple signing files
+keys
+
+# Python environment
+env27
+
+# Compiled Python
+*.pyc
