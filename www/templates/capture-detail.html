@@ -1,0 +1,28 @@
+<!--
+  This template loads for the 'tab.friend-detail' state (app.js)
+  'firend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
+  The FriendsCtrl pulls data from the Friends service (service.js)
+  The Friends service returns an array of friend data
+-->
+<ion-view title="Capture Detail">
+  <ion-content class="has-header padding" scroll="false">
+    <form>
+      <div class="row">
+        <div class="col col-33">
+          photo goes here
+        </div>
+        <div class="col">
+          <div class="row">
+            <input type="datetime-local"/>
+          </div>
+          <div class="row">
+            <input type="date"/>
+          </div>
+          <div class="row">
+            <input type="time"/>
+          </div>
+        </div>
+      </div>
+    </form>
+  </ion-content>
+</ion-view>
