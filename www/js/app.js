@@ -45,6 +45,15 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
         }
       }
     })
+    .state('tab.capture-detail', {
+      url: '/capture/new',
+      views: {
+        'tab-capture': {
+          templateUrl: 'templates/capture-detail.html',
+          controller: 'CaptureDetailCtrl'
+        }
+      }
+    })
 
     .state('tab.review', {
       url: '/review',
@@ -56,7 +65,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services'])
       }
     })
     .state('tab.review-detail', {
-      url: '/review/:friendId',
+      url: '/review/:entryId',
       views: {
         'tab-review': {
           templateUrl: 'templates/review-detail.html',
