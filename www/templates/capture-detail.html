@@ -7,20 +7,33 @@
 <ion-view title="Capture Detail">
   <ion-content class="has-header padding" scroll="false">
     <form>
-      <div class="row">
+      <div class="row row-center">
         <div class="col col-33">
-          photo goes here
+            <div class="item no-padding">
+                <img width=100% ng-src="data:image/JPEG;base64,{{newEntry.pic}}">
+            </div>
         </div>
         <div class="col">
-          <div class="row">
-            <input type="datetime-local"/>
-          </div>
-          <div class="row">
-            <input type="date"/>
-          </div>
-          <div class="row">
-            <input type="time"/>
-          </div>
+            <label class="item item-input">
+                <input type="datetime-local" ng-model="newEntry.date">
+            </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+            <label class="item item-input">
+                <input type="text" placeholder="Comment, if desired">
+            </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col col-50">
+            <button class="button button-block button-positive" ng-click="addPicture()">Add</button>
+        </div>
+        <div class="col col-50">
+            <button class="button button-block button-assertive" ng-click="cancelPicture()">Cancel</button>
+        </div>
+        <div class="col">
         </div>
       </div>
     </form>
