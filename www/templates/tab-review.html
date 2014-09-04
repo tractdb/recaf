@@ -1,9 +1,10 @@
 <ion-view title="Review">
   <ion-content class="has-header">
     <list>
-      <a class="item item-avatar" ng-repeat="entry in entries" href="#/tab/review/{{entry.id}}">
-        <img width="100%" ng-src="data:image/JPEG;base64,{{entry.pic}}">
-        {{entry.date}}
+      <a class="item item-thumbnail-left" ng-repeat="entry in entries" href="#/tab/review/{{entry.id}}">
+        <img ng-src="data:image/JPEG;base64,{{entry.pic}}">
+        <h2>{{entry.date | date: 'EEE MMM d, h:mm a'}}</h2>
+        <p>{{entry.comment}}</p>
       </a>
     </list>
   </ion-content>
