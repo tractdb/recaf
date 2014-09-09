@@ -15,9 +15,6 @@ angular.module('starter.services', [])
       return entries[entryId];
     },
     add: function(entry) {
-      // TEMP
-      console.log('new entry, date', entry.date);
-      // TEMP
       entry.id = entries.length;
       entries.push(entry);
     }

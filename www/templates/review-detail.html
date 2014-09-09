@@ -4,7 +4,9 @@
   The FriendsCtrl pulls data from the Friends service (service.js)
   The Friends service returns an array of friend data
 -->
-<ion-view title="{{entry.name}}">
+<ion-view title="{{entry.date | date: 'MMM d, h:mm a'}}">
   <ion-content has-header="true" padding="true">
+    <img width="100%" ng-src="data:image/JPEG;base64,{{entry.pic}}">
+    <p>{{entry.comment}}</p>
   </ion-content>
 </ion-view>
