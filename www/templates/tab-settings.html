@@ -1,5 +1,16 @@
 <ion-view title="Settings">
-  <ion-content class="has-header padding">
-    <h1>Settings</h1>
+  <ion-content class="has-header padding" scroll="false" style="-webkit-align-items: center; align-items: center">
+  <div class="card padding-top">
+    <div class="item item-text-wrap">
+      <div ng-style="{'text-align': 'center', visibility: replicationInProgress ? 'visible' : 'hidden'}">
+      <h2>A replication is in progress.</h2>
+      </div>
+    </div>
+  </div>
+  <div class="card">
+  <button class="button button-large button-block button-assertive" ng-disabled="replicationInProgress" ng-click="beginReplication()">
+  Begin Replication
+  </button>
+  </div>
   </ion-content>
 </ion-view>

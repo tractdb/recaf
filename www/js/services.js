@@ -8,6 +8,7 @@ angular.module('starter.services', [])
   var FULLPICNAME = 'fullpic.jpg';
   var cblurl = null;
   var db_is_initialized = false;
+  var replication_prom = null;   // $http promise for replication
 
   function cblurl_p()
   {
@@ -137,6 +138,7 @@ angular.module('starter.services', [])
             return function(entryId) { return fullPicURL(dburl, entryId); };
         });
     },
+
     all: function() {
       // Return a promise for all the journal entries.
       //
@@ -151,6 +153,7 @@ angular.module('starter.services', [])
               throw error;
           });
     },
+
     get: function(entryId) {
         // Return a promise for the specified document.
         //
@@ -163,6 +166,7 @@ angular.module('starter.services', [])
             return response.data;
         });
     },
+
     add: function(entry) {
       // Return a promise to add the specified entry. The promise
       // resolves to null.
@@ -201,6 +205,38 @@ angular.module('starter.services', [])
               throw err;
             }
       );
+    },
+
+    replicate: function() {
+        // Return a promise to start a replication process. If
+        // replication is already in progress, just return the existing
+        // promise. The promise resolves to null.
+        //
+        if (replication_prom)
+            return replication_prom;
+        var repspec = {
+            source: DBNAME,
+            target: 'http://jeffsco:jeffsco@slicer.cs.washington.edu:5984/jeffsco_tractdb'
+        };
+        replication_prom =
+            cblurl_p()
+            .then(function(cblurl) {
+                return $http.post(cblurl + '/_replicate', repspec);
+            })
+            .then(
+                function() { replication_prom = null; },
+                function(err) {
+                    console.log(err); // (Displays in debugger or device log.)
+                    replication_prom = null;
+                }
+            );
+        return replication_prom;
+    },
+
+    replicating: function() {
+        // Return true if replication is in progress, false otherwise.
+        //
+        return !!replication_prom;
     }
   };
 })
