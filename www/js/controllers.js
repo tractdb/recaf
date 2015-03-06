@@ -57,5 +57,11 @@ angular.module('starter.controllers', [])
   .then(function(e) { $scope.entry = e; });
 })
 
-.controller('SettingsCtrl', function($scope) {
+.controller('SettingsCtrl', function($scope, Entries) {
+    $scope.replicationInProgress = Entries.replicating();
+    $scope.beginReplication = function() {
+        $scope.replicationInProgress = true;
+        return Entries.replicate()
+        .then(function() { $scope.replicationInProgress = false; });
+    };
 })
