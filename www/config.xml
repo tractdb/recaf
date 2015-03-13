@@ -31,6 +31,8 @@
     <!-- Don't store local date in an iCloud backup. Turn this to "cloud" to enable storage 
          to be sent to iCloud. Note: enabling this could result in Apple rejecting your app.
     -->
+
+    <preference name="StatusBarOverlaysWebView" value="false" />
     <preference name="BackupWebStorage" value="none" />
 
     <feature name="StatusBar">

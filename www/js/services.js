@@ -4,7 +4,8 @@ angular.module('starter.services', [])
 /* This service manages journal entries as Couchbase Lite documents.
  */
 .factory('Entries', function($q, $http) {
-  var DBNAME = 'journal';
+  var LDBNAME = 'journal';
+  var RDBNAME = 'http://{USER}:{PASS}@slicer.cs.washington.edu:5984/{USER}_tractdb';
   var FULLPICNAME = 'fullpic.jpg';
   var cblurl = null;
   var db_is_initialized = false;
@@ -41,7 +42,7 @@ angular.module('starter.services', [])
     // Return a promise to initialize the journal DB. The promise
     // resolves to the URL of the DB.
     // 
-    var dburl = cblurl + DBNAME;
+    var dburl = cblurl + LDBNAME;
 
     if (db_is_initialized) {
         var def = $q.defer();
@@ -207,27 +208,44 @@ angular.module('starter.services', [])
       );
     },
 
-    replicate: function() {
+    replicate: function(loginfo) {
         // Return a promise to start a replication process. If
         // replication is already in progress, just return the existing
         // promise. The promise resolves to null.
         //
+        // Caller provides an object giving the username and password
+        // for the CouchDB server. Currently we assume that the database
+        // name is {USER}_tractdb.
+        //
         if (replication_prom)
             return replication_prom;
-        var repspec = {
-            source: DBNAME,
-            target: 'http://jeffsco:jeffsco@slicer.cs.washington.edu:5984/jeffsco_tractdb'
-        };
+        if (!loginfo) {
+            var def = $q.defer();
+            def.resolve(null);
+            return def.promise;
+        }
+        var rdbname = RDBNAME.replace(/{USER}/g, loginfo.username);
+        rdbname = rdbname.replace(/{PASS}/g, loginfo.password);
+        var pushspec = { source: LDBNAME, target: rdbname };
+        var pullspec = { source: rdbname, target: LDBNAME };
         replication_prom =
-            cblurl_p()
-            .then(function(cblurl) {
-                return $http.post(cblurl + '/_replicate', repspec);
+            init_p()
+            .then(function(dburl) {
+                var cblurl = dburl.replace(/[^/]*$/, '');
+                var pushp, pullp;
+                pushp = $http.post(cblurl + '_replicate', pushspec);
+                pullp = $http.post(cblurl + '_replicate', pullspec);
+                return $q.all([pushp, pullp]);
             })
             .then(
-                function() { replication_prom = null; },
-                function(err) {
-                    console.log(err); // (Displays in debugger or device log.)
+                function() {
                     replication_prom = null;
+                    return null;
+                },
+                function(err) {
+                    console.log(err);
+                    replication_prom = null;
+                    return null;
                 }
             );
         return replication_prom;

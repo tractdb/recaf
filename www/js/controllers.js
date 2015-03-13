@@ -1,4 +1,4 @@
-angular.module('starter.controllers', [])
+angular.module('starter.controllers', [ 'recaf.utils' ])
 
 .controller('CaptureCtrl', function($rootScope, $scope, $state, Entries) {
     function yespic(pic) {
@@ -57,11 +57,22 @@ angular.module('starter.controllers', [])
   .then(function(e) { $scope.entry = e; });
 })
 
-.controller('SettingsCtrl', function($scope, Entries) {
+.controller('SettingsCtrl', function($scope, $ionicModal, Utils, Entries) {
     $scope.replicationInProgress = Entries.replicating();
     $scope.beginReplication = function() {
-        $scope.replicationInProgress = true;
-        return Entries.replicate()
-        .then(function() { $scope.replicationInProgress = false; });
+        Utils.loginfo_p("couchuser", $scope, 'CouchDB Login')
+        .then(function(loginfo) {
+            if (!loginfo)
+                return null;
+            $scope.replicationInProgress = true;
+            return Entries.replicate(loginfo)
+            .then(function(_) {
+                $scope.replicationInProgress = false;
+                return null;
+            });
+        });
+    };
+    $scope.clearCredentials = function() {
+        Utils.loginfo_clear("couchuser");
     };
 })
