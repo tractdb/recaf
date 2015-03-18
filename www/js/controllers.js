@@ -57,7 +57,7 @@ angular.module('starter.controllers', [ 'recaf.utils' ])
   .then(function(e) { $scope.entry = e; });
 })
 
-.controller('SettingsCtrl', function($scope, $ionicModal, Utils, Entries) {
+.controller('SettingsCtrl', function($scope, Utils, Entries) {
     $scope.replicationInProgress = Entries.replicating();
     $scope.beginReplication = function() {
         Utils.loginfo_p("couchuser", $scope, 'CouchDB Login')

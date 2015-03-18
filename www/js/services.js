@@ -5,7 +5,10 @@ angular.module('starter.services', [])
  */
 .factory('Entries', function($q, $http) {
   var LDBNAME = 'journal';
-  var RDBNAME = 'http://{USER}:{PASS}@slicer.cs.washington.edu:5984/{USER}_tractdb';
+  var RDBNAME = 'http://{USER}:{PASS}@tractdb.org/couch/{USER}_tractdb';
+  // Former CouchDB URLs
+  // 'http://{USER}:{PASS}@dockertesta.cs.washington.edu/{USER}_tractdb';
+  // 'http://{USER}:{PASS}@slicer.cs.washington.edu:5984/{USER}_tractdb';
   var FULLPICNAME = 'fullpic.jpg';
   var cblurl = null;
   var db_is_initialized = false;
