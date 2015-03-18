@@ -184,6 +184,7 @@ angular.module('starter.services', [])
           if (p != 'pic')
               myentry[p] = entry[p];
       });
+      myentry.type = 'entry';
 
       var dburl;
 
