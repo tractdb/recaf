@@ -295,7 +295,9 @@ angular.module('starter.services', [])
         }
         var rdbname = RDBNAME.replace(/{USER}/g, loginfo.username);
         rdbname = rdbname.replace(/{PASS}/g, loginfo.password);
-        var pushspec = { source: LDBNAME, target: rdbname };
+        // var pushspec = { source: LDBNAME, target: rdbname };
+        var pushspec = { source: LDBNAME, target: rdbname,
+                         filter: 'ddocs/keepsecrets' };
         var pullspec = { source: rdbname, target: LDBNAME };
         replication_prom =
             init_p()
