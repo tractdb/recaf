@@ -12,6 +12,7 @@ angular.module('starter.services', [])
   var FULLPICNAME = 'fullpic.jpg';
   var cblurl = null;
   var db_is_initialized = false;
+  var ddocs_are_initialized = false;
   var replication_prom = null;   // $http promise for replication
 
   function cblurl_p()
@@ -66,14 +67,74 @@ angular.module('starter.services', [])
               var msg = 'DB creation failed, status: ' + resp.status
               throw new Error(msg);
             }
-          });
+          }
+      );
+  }
+
+  function initddocs_p(dburl)
+  {
+    // Return a promise to create some design documents in the DB. The
+    // promise resolves to the URL of the DB.
+    // 
+    if (ddocs_are_initialized) {
+        var def = $q.defer();
+        def.resolve(dburl);
+        return def.promise;
+    }
+
+    var ddocs = {
+        language: 'javascript',
+        views: {
+            entries: {
+                map:
+                    "function(doc) { " +
+                        "if (doc.type == 'entry') emit(doc.date, doc); " +
+                    "}"
+            }
+        },
+        filters: {
+            keepsecrets:
+                "function(doc) { " +
+                    "if (doc._id.search(/^_design\\//) >= 0) " +
+                        "return false; " +
+                    "return !doc.comment || " +
+                            "doc.comment.search(/secret/i) < 0; " +
+                "}"
+        }
+    };
+
+    // Delete any existing design documents and create new ones. That
+    // way we know for sure what they are.
+    //
+    var ddocsurl = dburl + '/_design/ddocs';
+    return $http.get(ddocsurl)
+    .then(
+        function exists(resp) {
+            var ddocsrevurl = ddocsurl + '?rev=' + resp.data._rev;
+            return $http.delete(ddocsrevurl);
+        },
+        function nosuch(resp) { return resp; } // Just continue, no delete
+    )
+    .then(function(_) {
+        return $http.put(ddocsurl, ddocs);
+    })
+    .then(
+        function good(resp) {
+            ddocs_are_initialized = true;
+            return dburl;
+        },
+        function bad(resp) {
+            console.log('initddocs_p error:', resp.status);
+            return dburl;
+        }
+    );
   }
 
   function init_p()
   {
     // Create the DB if necessary, resolving to its URL.
     //
-    return cblurl_p().then(initdb_p);
+    return cblurl_p().then(initdb_p).then(initddocs_p);
   }
 
   function fullPicURL(dburl, entryId)
@@ -114,20 +175,18 @@ angular.module('starter.services', [])
 
   function docarray_of_docrows(rows)
   {
+    // (Caller warrants that the rows are sorted into the desired
+    // order.)
+    //
     var docarray = [];
 
     rows.forEach(function(r) {
         var entry = {};
-        entry.id = r.doc._id;
-        for (p in r.doc) 
+        entry.id = r.value._id;
+        for (p in r.value) 
             if (p != '_id')
-                entry[p] = r.doc[p];
+                entry[p] = r.value[p];
         docarray.push(entry);
-    });
-    docarray.sort(function(a, b) {
-        if (a.date > b.date) return -1; // Most recent at top
-        if (a.date < b.date) return 1;
-        return 0;
     });
     return docarray;
   }
@@ -144,18 +203,23 @@ angular.module('starter.services', [])
     },
 
     all: function() {
-      // Return a promise for all the journal entries.
-      //
-      return init_p()
-      .then(function(dburl) {
-        return $http.get(dburl + '/_all_docs?include_docs=true');
-      })
-      .then(function good(response) {
-              return docarray_of_docrows(response.data.rows);
-          },
-          function bad(error) {
-              throw error;
-          });
+        // Return a promise for all the journal entries.
+        //
+        return init_p()
+        .then(function(dburl) {
+            var enturl = dburl + '/_design/ddocs/_view/entries';
+            enturl += '?descending=true';  // Most recent first.
+            return $http.get(enturl);
+        })
+        .then(
+            function good(response) {
+                return docarray_of_docrows(response.data.rows);
+            },
+            function bad(response) {
+                var msg = 'Error retrieving entries: ' + response.statusText;
+                throw new Error(msg);
+            }
+        );
     },
 
     get: function(entryId) {
@@ -180,6 +244,7 @@ angular.module('starter.services', [])
       //
       var pic = entry.pic;
       var myentry = {}; // Everything but the pic
+      myentry.type = 'entry';
       Object.getOwnPropertyNames(entry).forEach(function(p) {
           if (p != 'pic')
               myentry[p] = entry[p];
@@ -213,9 +278,9 @@ angular.module('starter.services', [])
     },
 
     replicate: function(loginfo) {
-        // Return a promise to start a replication process. If
-        // replication is already in progress, just return the existing
-        // promise. The promise resolves to null.
+        // Return a promise to start a bidirectional replication
+        // process. If replication is already in progress, just return
+        // the existing promise. The promise resolves to null.
         //
         // Caller provides an object giving the username and password
         // for the CouchDB server. Currently we assume that the database
@@ -242,7 +307,7 @@ angular.module('starter.services', [])
                 return $q.all([pushp, pullp]);
             })
             .then(
-                function() {
+                function(ra) {
                     replication_prom = null;
                     return null;
                 },
