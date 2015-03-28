@@ -4,15 +4,11 @@ angular.module('starter.services', [])
 /* This service manages journal entries as Couchbase Lite documents.
  */
 .factory('Entries', function($q, $http) {
-  // Remote DB for replication.
-  //
-  var RDBNAME =
-      // Note: need to edit your username+password into this URL for
-      // now. A login dialog is coming soon.
-      //
-      'http://USER:PASSWORD@slicer.cs.washington.edu:5984/' +
-      'USER_tractdb';
   var LDBNAME = 'journal';
+  var RDBNAME = 'http://{USER}:{PASS}@tractdb.org/couch/{USER}_tractdb';
+  // Former CouchDB URLs
+  // 'http://{USER}:{PASS}@dockertesta.cs.washington.edu/{USER}_tractdb';
+  // 'http://{USER}:{PASS}@slicer.cs.washington.edu:5984/{USER}_tractdb';
   var FULLPICNAME = 'fullpic.jpg';
   var cblurl = null;
   var db_is_initialized = false;
@@ -253,6 +249,7 @@ angular.module('starter.services', [])
           if (p != 'pic')
               myentry[p] = entry[p];
       });
+      myentry.type = 'entry';
 
       var dburl;
 
@@ -280,23 +277,35 @@ angular.module('starter.services', [])
       );
     },
 
-    replicate: function() {
+    replicate: function(loginfo) {
         // Return a promise to start a bidirectional replication
         // process. If replication is already in progress, just return
         // the existing promise. The promise resolves to null.
         //
+        // Caller provides an object giving the username and password
+        // for the CouchDB server. Currently we assume that the database
+        // name is {USER}_tractdb.
+        //
         if (replication_prom)
             return replication_prom;
-        // var pushspec = { source: LDBNAME, target: RDBNAME };
-        var pushspec = { source: LDBNAME, target: RDBNAME, filter: 'ddocs/keepsecrets' };
-        var pullspec = { source: RDBNAME, target: LDBNAME };
+        if (!loginfo) {
+            var def = $q.defer();
+            def.resolve(null);
+            return def.promise;
+        }
+        var rdbname = RDBNAME.replace(/{USER}/g, loginfo.username);
+        rdbname = rdbname.replace(/{PASS}/g, loginfo.password);
+        // var pushspec = { source: LDBNAME, target: rdbname };
+        var pushspec = { source: LDBNAME, target: rdbname,
+                         filter: 'ddocs/keepsecrets' };
+        var pullspec = { source: rdbname, target: LDBNAME };
         replication_prom =
             init_p()
             .then(function(dburl) {
-                var cblurl = dburl.replace(/[^/]*$/, "");
+                var cblurl = dburl.replace(/[^/]*$/, '');
                 var pushp, pullp;
-                pushp = $http.post(cblurl + '/_replicate', pushspec);
-                pullp = $http.post(cblurl + '/_replicate', pullspec);
+                pushp = $http.post(cblurl + '_replicate', pushspec);
+                pullp = $http.post(cblurl + '_replicate', pullspec);
                 return $q.all([pushp, pullp]);
             })
             .then(
@@ -305,7 +314,7 @@ angular.module('starter.services', [])
                     return null;
                 },
                 function(err) {
-                    console.log(err); // (Displays in debugger or device log.)
+                    console.log(err);
                     replication_prom = null;
                     return null;
                 }

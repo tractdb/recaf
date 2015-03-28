@@ -29,5 +29,8 @@
   "bugs": {
     "url": "https://github.com/tractdb/recaf/issues"
   },
-  "homepage": "https://github.com/tractdb/recaf"
+  "homepage": "https://github.com/tractdb/recaf",
+  "cordovaPlugins": [
+    "org.apache.cordova.statusbar"
+  ]
 }
