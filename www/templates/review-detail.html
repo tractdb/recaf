@@ -1,12 +1,6 @@
-<!--
-  This template loads for the 'tab.friend-detail' state (app.js)
-  'firend' is a $scope variable created in the FriendsCtrl controller (controllers.js)
-  The FriendsCtrl pulls data from the Friends service (service.js)
-  The Friends service returns an array of friend data
--->
 <ion-view title="{{entry.date | date: 'MMM d, h:mm a'}}">
   <ion-content has-header="true" padding="true">
-    <img width="100%" ng-src="{{fullPicURL(entryId)}}">
+    <img width="100%" ng-src="{{entryImgURL(entry)}}">
     <p>{{entry.comment}}</p>
   </ion-content>
 </ion-view>

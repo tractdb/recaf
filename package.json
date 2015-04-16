@@ -31,6 +31,7 @@
   },
   "homepage": "https://github.com/tractdb/recaf",
   "cordovaPlugins": [
-    "org.apache.cordova.statusbar"
+    "org.apache.cordova.statusbar",
+    "https://github.com/wymsee/cordova-imageResizer.git"
   ]
 }

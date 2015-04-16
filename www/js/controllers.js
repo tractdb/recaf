@@ -1,4 +1,6 @@
-angular.module('starter.controllers', [ 'recaf.utils' ])
+angular.module('recaf.controllers',
+    [ 'recaf.entryimg', 'recaf.login', 'recaf.resize', 'recaf.base64' ]
+)
 
 .controller('CaptureCtrl', function($rootScope, $scope, $state, Entries) {
     function yespic(pic) {
@@ -15,7 +17,10 @@ angular.module('starter.controllers', [ 'recaf.utils' ])
     };
 })
 
-.controller('CaptureDetailCtrl', function($rootScope, $scope, $state, Entries) {
+.controller('CaptureDetailCtrl', function($rootScope, $scope, $state,
+                                          Entries, Resize, Base64) {
+    var MEDHEIGHT = 640; // Resized picture height (medium = 480 x 640)
+
     function zpad(s) { return ('0' + s).substr(-2); }
     var now = new Date();
     var datestr = now.getFullYear() + '-' + zpad(now.getMonth() + 1) + '-' +
@@ -23,44 +28,59 @@ angular.module('starter.controllers', [ 'recaf.utils' ])
                   zpad(now.getMinutes()) + ':' + zpad(now.getSeconds());
 
     $scope.newEntry = {
-        pic: $rootScope.capturedPicture,
+        fullpic: $rootScope.capturedPicture,
         date: datestr,
         comment: ''
     };
     $scope.addPicture = function() {
         cordova.plugins.Keyboard.close();
-        Entries.add($scope.newEntry);
+
+        // Make a local copy of the new entry.
+        //
+        var entry = {};
+        for (p in $scope.newEntry) {
+            if (p == 'fullpic')
+                continue;
+            entry[p] = $scope.newEntry[p];
+        }
+
+        // Note: we're not waiting for this promise to complete.
+        //
+        Resize.resized_pic_p($rootScope.capturedPicture, 0, MEDHEIGHT)
+        .then(function(image) {
+            entry['medpic.jpg'] = Base64.decode(image);
+            Entries.add(entry);
+        });
+
         $state.go('tab.capture');
     };
     $scope.cancelPicture = function() {
+        $rootScope.capturedPicture = null;
         cordova.plugins.Keyboard.close();
         $state.go('tab.capture');
     }
 })
 
-.controller('ReviewCtrl', function($scope, Entries) {
-  Entries.fullPicURLFun()
-  .then(function(fpufn) {
-      $scope.fullPicURL = fpufn;
-      return Entries.all();
-  })
-  .then(function(es) { $scope.entries = es; });
+.controller('ReviewCtrl', function($scope, Entries, Entryimg) {
+    $scope.entryImgURL = Entryimg.url;
+    Entries.all()
+    .then(function(es) {
+        $scope.entries = es;
+    });
 })
 
-.controller('ReviewDetailCtrl', function($scope, $stateParams, Entries) {
-  Entries.fullPicURLFun()
-  .then(function(fpufn) {
-      $scope.fullPicURL = fpufn;
-      $scope.entryId = $stateParams.entryId;
-      return Entries.get($stateParams.entryId);
-    })
-  .then(function(e) { $scope.entry = e; });
+.controller('ReviewDetailCtrl', function($scope, $stateParams, Entries,
+                                            Entryimg) {
+    $scope.entryImgURL = Entryimg.url;
+    $scope.entryId = $stateParams.entryId;
+    Entries.get($stateParams.entryId)
+    .then(function(e) { $scope.entry = e; });
 })
 
-.controller('SettingsCtrl', function($scope, Utils, Entries) {
+.controller('SettingsCtrl', function($scope, Login, Entries) {
     $scope.replicationInProgress = Entries.replicating();
     $scope.beginReplication = function() {
-        Utils.loginfo_p("couchuser", $scope, 'CouchDB Login')
+        Login.loginfo_p("couchuser", $scope, 'CouchDB Login')
         .then(function(loginfo) {
             if (!loginfo)
                 return null;
@@ -73,6 +93,6 @@ angular.module('starter.controllers', [ 'recaf.utils' ])
         });
     };
     $scope.clearCredentials = function() {
-        Utils.loginfo_clear("couchuser");
+        Login.loginfo_clear("couchuser");
     };
 })
