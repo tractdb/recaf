@@ -2,7 +2,7 @@
   <ion-content class="has-header">
     <list>
       <a class="item item-thumbnail-left" ng-repeat="entry in entries" href="#/tab/review/{{entry.id}}">
-        <img ng-src="{{fullPicURL(entry.id)}}">
+        <img ng-src="{{entryImgURL(entry)}}">
         <h2>{{entry.date | date: 'EEE MMM d, h:mm a'}}</h2>
         <p>{{entry.comment}}</p>
       </a>

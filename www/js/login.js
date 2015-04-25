@@ -1,8 +1,8 @@
-// utils.js     Useful functions
+// login.js     Get username/password
 //
-angular.module('recaf.utils', [ 'ionic' ])
+angular.module('recaf.login', [ 'ionic' ])
 
-.factory('Utils', function($q, $ionicModal) {
+.factory('Login', function($q, $ionicModal) {
     return {
         loginfo_p:
             function(storekey, scope, heading) {

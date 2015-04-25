@@ -26,6 +26,7 @@
     <gap:plugin name="org.apache.cordova.console" />
     <gap:plugin name="org.apache.cordova.device" />
     <gap:plugin name="com.couchbase.lite.phonegap" />
+    <gap:plugin name="com.synconset.imageResizer" />
 
     <gap:platform name="ios" />
 
