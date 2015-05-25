@@ -1,0 +1,38 @@
+<ion-modal-view class="modal">
+    <ion-header-bar class="bar-stable">
+        <h1 class="title">New Journal Entry</h1>
+    </ion-header-bar>
+    <ion-content class="has-header" style="background-color: #ffffff;">
+    <form>
+      <div class="row row-center">
+        <div class="col col-33">
+            <div class="item no-padding">
+                <img width=100% ng-src="{{annotate_picurl}}">
+            </div>
+        </div>
+        <div class="col">
+            <label class="item item-input">
+                <input type="datetime-local" ng-model="annotate_info.date">
+            </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col">
+            <label class="item item-input">
+                <input type="text" placeholder="Comment, if desired" ng-model="annotate_info.comment">
+            </label>
+        </div>
+      </div>
+      <div class="row">
+        <div class="col col-50">
+            <button class="button button-block button-positive" ng-click="annotate_add()">Add</button>
+        </div>
+        <div class="col col-50">
+            <button class="button button-block button-assertive" ng-click="annotate_cancel()">Cancel</button>
+        </div>
+        <div class="col">
+        </div>
+      </div>
+    </form>
+    </ion-content>
+</ion-modal-view>

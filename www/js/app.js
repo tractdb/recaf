@@ -43,15 +43,6 @@ angular.module('recaf', ['ionic', 'recaf.controllers', 'recaf.entries'])
         }
       }
     })
-    .state('tab.capture-detail', {
-      url: '/capture/new',
-      views: {
-        'tab-capture': {
-          templateUrl: 'templates/capture-detail.html',
-          controller: 'CaptureDetailCtrl'
-        }
-      }
-    })
 
     .state('tab.review', {
       url: '/review',

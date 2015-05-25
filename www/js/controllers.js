@@ -1,64 +1,54 @@
+// controllers.js     Controllers for the different tabs
+//
+
 angular.module('recaf.controllers',
-    [ 'recaf.entryimg', 'recaf.login', 'recaf.resize', 'recaf.base64' ]
+    [ 'recaf.entryimg', 'recaf.login', 'recaf.annotate', 'recaf.resize',
+      'recaf.entries', 'recaf.fileio', 'recaf.dateforms' ]
 )
 
-.controller('CaptureCtrl', function($rootScope, $scope, $state, Entries) {
-    function yespic(pic) {
-        $rootScope.capturedPicture = pic;
-        $state.go('tab.capture-detail');
-    }
-    function nopic() {
-    }
-    $scope.getPicture = function() {
-        // (Ask for base64-encoded image representation.)
-        //
-        var opts = { destinationType: Camera.DestinationType.DATA_URL };
-        navigator.camera.getPicture(yespic, nopic, opts);
-    };
-})
-
-.controller('CaptureDetailCtrl', function($rootScope, $scope, $state,
-                                          Entries, Resize, Base64) {
+.controller('CaptureCtrl', function($scope, $state, $ionicBackdrop,
+                                    Annotate, Resize, Entries, FileIO,
+                                    Dateforms) {
     var MEDHEIGHT = 640; // Resized picture height (medium = 480 x 640)
 
-    function zpad(s) { return ('0' + s).substr(-2); }
-    var now = new Date();
-    var datestr = now.getFullYear() + '-' + zpad(now.getMonth() + 1) + '-' +
-                  zpad(now.getDate()) + 'T' + zpad(now.getHours()) + ':' +
-                  zpad(now.getMinutes()) + ':' + zpad(now.getSeconds());
+    function yespic(picurl) {
+        Annotate.details_p($scope, picurl, new Date())
+        .then(function(details) {
+            $ionicBackdrop.release();
+            if (!details)
+                return; // User canceled (or error)
+            var entry = {};
+            entry.date = Dateforms.html5_string(details.date);
+            entry.comment = details.comment;
 
-    $scope.newEntry = {
-        fullpic: $rootScope.capturedPicture,
-        date: datestr,
-        comment: ''
-    };
-    $scope.addPicture = function() {
-        cordova.plugins.Keyboard.close();
-
-        // Make a local copy of the new entry.
-        //
-        var entry = {};
-        for (p in $scope.newEntry) {
-            if (p == 'fullpic')
-                continue;
-            entry[p] = $scope.newEntry[p];
-        }
-
-        // Note: we're not waiting for this promise to complete.
-        //
-        Resize.resized_pic_p($rootScope.capturedPicture, 0, MEDHEIGHT)
-        .then(function(image) {
-            entry['medpic.jpg'] = Base64.decode(image);
-            Entries.add(entry);
-        });
-
-        $state.go('tab.capture');
-    };
-    $scope.cancelPicture = function() {
-        $rootScope.capturedPicture = null;
-        cordova.plugins.Keyboard.close();
-        $state.go('tab.capture');
+            // Note: not waiting for this chain of promises to resolve.
+            //
+            var rpicurl;
+            Resize.resized_pic_p(picurl, 1e9, MEDHEIGHT)
+            .then(function(rpu) {
+                rpicurl = rpu;
+                return FileIO.read_array_buffer_p(rpicurl);
+            })
+            .then(function(buf) {
+                entry['medpic.jpg'] = new Uint8Array(buf);
+                return Entries.add(entry);
+            })
+            .then(function() {
+                return FileIO.delete_p(picurl);
+            })
+            .then(function() {
+                return FileIO.delete_p(rpicurl);
+            });
+        })
     }
+    function nopic() {
+        $ionicBackdrop.release();
+    }
+    $scope.getPicture = function() {
+        var opts = { destinationType: Camera.DestinationType.FILE_URI };
+        $ionicBackdrop.retain();
+        navigator.camera.getPicture(yespic, nopic, opts);
+    };
 })
 
 .controller('ReviewCtrl', function($scope, Entries, Entryimg) {
