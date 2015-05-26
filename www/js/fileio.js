@@ -1,4 +1,4 @@
-// fileio.js     Read and write local files
+// fileio.js     Operations on local files
 //
 // This code depends on the plugin 'cordova-plugin-file'
 //
@@ -38,6 +38,45 @@ angular.module('recaf.fileio', ['ionic'])
                 );
                 return def.promise;
             },
+
+        rename_p:
+            // Return a promise to rename the file given by the URL to
+            // the given new basename. The promise resolves to null.
+            //
+            function(url, newbase)
+            {
+                var def = $q.defer();
+                var rsl = url.lastIndexOf('/');
+                if (rsl < 0) {
+                    def.reject(new Error('could not rename ' + url));
+                    return def.promise;
+                }
+                var dirurl = url.substring(0, rsl);
+                window.resolveLocalFileSystemURL(dirurl,
+                    function yesResolveDir(dir_entry) {
+                        window.resolveLocalFileSystemURL(url,
+                            function yesResolveFile(file_entry) {
+                                file_entry.moveTo(dir_entry, newbase,
+                                    function yesMoveTo(nde) {
+                                        def.resolve(null);
+                                    },
+                                    function noMoveTo(err) {
+                                        def.reject(err);
+                                    }
+                                );
+                            },
+                            function noResolveFile(err) {
+                                def.reject(err);
+                            }
+                        );
+                    },
+                    function noResolveDir(err) {
+                        def.reject(err);
+                    }
+                );
+                return def.promise;
+            },
+
         delete_p:
             // Return a promise to delete the file given by the URL. The
             // promise resolves to null.
