@@ -1,4 +1,4 @@
-// entryimg.js     Choose an image to represent a journal entry
+// entryimg.js     Images in entries
 //
 angular.module('recaf.entryimg', [ 'ionic' ])
 
@@ -6,12 +6,20 @@ angular.module('recaf.entryimg', [ 'ionic' ])
     var MEDNAME = 'medpic.jpg';
 
     return {
+        MEDLENGTH:
+            // Longest dim of medium sized image (480 x 640, 640 x 480).
+            640,
+        MEDNAME:
+            // Attachment name of medium sized image.
+            //
+            MEDNAME,
         url:
-            function(entry) {
-                // Return the URL of a good image for the given journal
-                // entry. For now we return 'medpic.jpg' if present,
-                // otherwise any JPEG image we can find.
-                //
+            // Return the URL of a good image for the given journal
+            // entry. For now we return 'medpic.jpg' if present,
+            // otherwise any JPEG image we can find.
+            //
+            function(entry)
+            {
                 if (MEDNAME in entry && entry[MEDNAME].url)
                     return entry[MEDNAME].url;
                 for (p in entry)

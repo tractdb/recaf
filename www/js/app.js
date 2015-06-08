@@ -44,6 +44,16 @@ angular.module('recaf', ['ionic', 'recaf.controllers', 'recaf.entries'])
       }
     })
 
+    .state('tab.capreview', {
+      url: '/capreview',
+      views: {
+        'tab-capture': {
+          templateUrl: 'templates/cap-review.html',
+          controller: 'CapReviewCtrl'
+        }
+      }
+    })
+
     .state('tab.review', {
       url: '/review',
       views: {
@@ -53,6 +63,7 @@ angular.module('recaf', ['ionic', 'recaf.controllers', 'recaf.entries'])
         }
       }
     })
+
     .state('tab.review-detail', {
       url: '/review/:entryId',
       views: {

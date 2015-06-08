@@ -1,17 +1,54 @@
-/* Empty. Add your own CSS if you like */
+/* Note: due to CSS specificity rules, you often have to select on the
+ * exact current structure of the item you want to target. This is
+ * brittle, but otherwise the standard Ionic CSS wins because it's more
+ * specific. Don't want to overuse !important.
+ */
+
 .no-padding {
     padding: 0px !important;
 }
 
+/* The "Ionic backdrop" can be placed over current content while other
+ * content is loaded in front, to communicate that the current content
+ * is temporarily inactive.
+ */
 .backdrop {
     background-color: rgba(255, 255, 255, 0.7);
 }
 
-.item-thumbnail-left, .item-thumbnail-left .item-content {
-  padding-left: 85px;
+/* Set thumbnail width and height to auto, which gives exactly what we
+ * want: keep aspect ratio, scale longest dimension to max-width or
+ * max-height. (Under current Ionic defs, max-width and max-height are
+ * 80px.)
+ *
+ * Center thumbnails vertically and horizontally in 80px x 80px square.
+ */
+.item-thumbnail-left > img:first-child {
+    height: auto;
+    width: auto;
+    top: 50%;
+    left: 50px;
+    -webkit-transform: translate(-50%, -50%); /* Works today */
+    transform: translate(-50%, -50%); /* Supposed to work at some point */
 }
 
-.item-thumbnail-left > img:first-child, .item-thumbnail-left .item-image, .item-thumbnail-left .item-content > img:first-child, .item-thumbnail-left .item-content .item-image {
-    height: 100%;
+/* Full size picture is displayed at 280px in longest dimension. Center
+ * horizontally, don't worry about vertically.
+ */
+.recaf-entry-full > img, .recaf-entry-full img {
+    height: auto;
     width: auto;
+    max-width: 280px;
+    max-height: 280px;
+    position: relative;
+    left: 50%;
+    -webkit-transform: translate(-50%, 0); /* Works today */
+    transform: translate(-50%, 0); /* Supposed to work at some point */
+}
+
+/* Enlarge captions on detail panes. The default seems
+ * disproportionately small (or maybe it's presbyopia).
+ */
+.item-body p.recaf-detail-caption {
+    font-size: 110%;
 }

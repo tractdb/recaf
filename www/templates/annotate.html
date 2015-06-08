@@ -4,14 +4,17 @@
     </ion-header-bar>
     <ion-content class="has-header" style="background-color: #ffffff;">
     <form>
-      <div class="row row-center">
-        <div class="col col-33">
-            <div class="item no-padding">
-                <img width=100% ng-src="{{annotate_picurl}}">
+      <div class="row">
+        <div class="col">
+            <div class="item recaf-entry-full no-padding">
+                <img ng-src="{{annotate_picurl}}">
             </div>
         </div>
-        <div class="col">
+      </div>
+      <div class="row row-center">
+        <div class="col text-center">
             <label class="item item-input">
+                <span class="input-label">Date/Time</span>
                 <input type="datetime-local" ng-model="annotate_info.date">
             </label>
         </div>
