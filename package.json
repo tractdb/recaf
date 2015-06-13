@@ -32,6 +32,12 @@
   "homepage": "https://github.com/tractdb/recaf",
   "cordovaPlugins": [
     "org.apache.cordova.statusbar",
-    "https://github.com/wymsee/cordova-imageResizer.git"
+    "com.ionic.keyboard",
+    "org.apache.cordova.camera",
+    "org.apache.cordova.console",
+    "org.apache.cordova.device"
+  ],
+  "cordovaPlatforms": [
+    "ios"
   ]
 }

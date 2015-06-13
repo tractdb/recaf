@@ -43,12 +43,13 @@ angular.module('recaf', ['ionic', 'recaf.controllers', 'recaf.entries'])
         }
       }
     })
-    .state('tab.capture-detail', {
-      url: '/capture/new',
+
+    .state('tab.capreview', {
+      url: '/capreview',
       views: {
         'tab-capture': {
-          templateUrl: 'templates/capture-detail.html',
-          controller: 'CaptureDetailCtrl'
+          templateUrl: 'templates/cap-review.html',
+          controller: 'CapReviewCtrl'
         }
       }
     })
@@ -62,6 +63,7 @@ angular.module('recaf', ['ionic', 'recaf.controllers', 'recaf.entries'])
         }
       }
     })
+
     .state('tab.review-detail', {
       url: '/review/:entryId',
       views: {

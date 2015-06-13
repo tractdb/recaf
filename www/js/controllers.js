@@ -1,68 +1,143 @@
+// controllers.js     Controllers for the different tabs
+//
+
+function url_uniquify(url)
+{
+    // Make the given file URL unique by adding a unique string before
+    // the last '.'.
+    //
+    var dotx = url.lastIndexOf('.');
+    if (dotx < 0)
+        return url + Date.now();
+    return url.substring(0, dotx) + Date.now() + url.substring(dotx);
+}
+
 angular.module('recaf.controllers',
-    [ 'recaf.entryimg', 'recaf.login', 'recaf.resize', 'recaf.base64' ]
+    [ 'recaf.entryimg', 'recaf.login', 'recaf.annotate', 'recaf.resize',
+      'recaf.entries', 'recaf.fileio', 'recaf.dateforms' ]
 )
 
-.controller('CaptureCtrl', function($rootScope, $scope, $state, Entries) {
-    function yespic(pic) {
-        $rootScope.capturedPicture = pic;
-        $state.go('tab.capture-detail');
+.controller('CaptureCtrl', function($q, $rootScope, $scope, $state, $location,
+                                    $ionicBackdrop,
+                                    Annotate, Resize, Entryimg, Entries,
+                                    FileIO, Dateforms) {
+
+    function image_dims_p(imgurl)
+    {
+        // Return a promise for the width and height of the given image.
+        // The promise resolves to an array: [ width, height ]
+        //
+        var def = $q.defer();
+        var im = new Image();
+        im.onerror = function(err) { def.reject(err); }
+        im.onload = function() { def.resolve([ im.width, im.height ]); }
+        im.src = imgurl
+        return def.promise;
+    }
+
+    function yespic(picurl)
+    {
+        // The user accepted the picture. Get annotations from user,
+        // then add as journal entry.
+        //
+
+        // (The camera plugin always creates an image with the same
+        // name, since we delete the image when we're done. Need to make
+        // the image name artificially unique or the image cache of
+        // WebView gets confused. Or so it seems.)
+        //
+        var upicurl = url_uniquify(picurl);
+        var ubase = upicurl.substring(upicurl.lastIndexOf('/') + 1);
+
+        FileIO.rename_p(picurl, ubase)
+        .then(function() {
+            return Annotate.details_p($scope, upicurl, new Date());
+        })
+        .then(function(details) {
+            if (!details) {
+                // User canceled (or error)
+                //
+                $ionicBackdrop.release();
+                return;
+            }
+
+            // Let user see what they've got.
+            //
+            // Note: should be using state parameters instead of root scope.
+            //
+            $rootScope.caprev_picurl = upicurl
+            $rootScope.caprev_date = Dateforms.html5_string(details.date);
+            $rootScope.caprev_comment = details.comment;
+            $state.go('tab.capreview');
+            $ionicBackdrop.release();
+
+            // Meanwhile in pseudo-background, create journal entry and
+            // clean up.
+            //
+            var rpicurl;
+            var entry = {};
+            entry.date = Dateforms.html5_string(details.date);
+            entry.comment = details.comment;
+
+            image_dims_p(upicurl)
+            .then(function(wdht) {
+                var width = wdht[0];
+                var height = wdht[1];
+                var resizewd, resizeht;
+                if (width > height) {
+                    resizewd = Entryimg.MEDLENGTH;
+                    resizeht = 1e9;
+                } else {
+                    resizewd = 1e9;
+                    resizeht = Entryimg.MEDLENGTH;
+                }
+                return Resize.resized_pic_p(upicurl, resizewd, resizeht);
+            })
+            .then(function(rpu) {
+                rpicurl = rpu;
+                return FileIO.read_array_buffer_p(rpicurl);
+            })
+            .then(function(buf) {
+                entry[Entryimg.MEDNAME] = new Uint8Array(buf);
+                return Entries.add(entry);
+            })
+            .then(function() {
+                return FileIO.delete_p(rpicurl);
+            });
+        })
     }
     function nopic() {
+        // User cancelled. Go back to current state.
+        //
+        $ionicBackdrop.release();
     }
     $scope.getPicture = function() {
-        // (Ask for base64-encoded image representation.)
-        //
-        var opts = { destinationType: Camera.DestinationType.DATA_URL };
+        var opts = {
+            destinationType: Camera.DestinationType.FILE_URI,
+            correctOrientation: true
+        };
+        $ionicBackdrop.retain();
         navigator.camera.getPicture(yespic, nopic, opts);
     };
 })
 
-.controller('CaptureDetailCtrl', function($rootScope, $scope, $state,
-                                          Entries, Resize, Base64) {
-    var MEDHEIGHT = 640; // Resized picture height (medium = 480 x 640)
-
-    function zpad(s) { return ('0' + s).substr(-2); }
-    var now = new Date();
-    var datestr = now.getFullYear() + '-' + zpad(now.getMonth() + 1) + '-' +
-                  zpad(now.getDate()) + 'T' + zpad(now.getHours()) + ':' +
-                  zpad(now.getMinutes()) + ':' + zpad(now.getSeconds());
-
-    $scope.newEntry = {
-        fullpic: $rootScope.capturedPicture,
-        date: datestr,
-        comment: ''
-    };
-    $scope.addPicture = function() {
-        cordova.plugins.Keyboard.close();
-
-        // Make a local copy of the new entry.
+.controller('CapReviewCtrl', function($rootScope, $scope) {
+    $scope.newentry = {};
+    $scope.newentry.picurl = $rootScope.caprev_picurl;
+    $scope.newentry.date = $rootScope.caprev_date;
+    $scope.newentry.comment = $rootScope.caprev_comment;
+    $scope.$on("$destroy", function() {
+        // Clean up original camera image when exiting this page.
         //
-        var entry = {};
-        for (p in $scope.newEntry) {
-            if (p == 'fullpic')
-                continue;
-            entry[p] = $scope.newEntry[p];
-        }
-
-        // Note: we're not waiting for this promise to complete.
-        //
-        Resize.resized_pic_p($rootScope.capturedPicture, 0, MEDHEIGHT)
-        .then(function(image) {
-            entry['medpic.jpg'] = Base64.decode(image);
-            Entries.add(entry);
-        });
-
-        $state.go('tab.capture');
-    };
-    $scope.cancelPicture = function() {
-        $rootScope.capturedPicture = null;
-        cordova.plugins.Keyboard.close();
-        $state.go('tab.capture');
-    }
+        navigator.camera.cleanup(
+            function yesCleanup() {},
+            function noCleanup() {}
+        );
+    });
 })
 
 .controller('ReviewCtrl', function($scope, Entries, Entryimg) {
-    $scope.entryImgURL = Entryimg.url;
+    $scope.EIURL = Entryimg.url;
     Entries.all()
     .then(function(es) {
         $scope.entries = es;

@@ -1,6 +1,7 @@
 # plugins and platforms
 plugins
 platforms
+resources
 
 # PyCharm settings
 .idea

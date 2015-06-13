@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="com.psellos.istc.recaf"
-        version="1.0.1"
+        version="1.0.6"
         xmlns="http://www.w3.org/ns/widgets"
         xmlns:cdv="http://cordova.apache.org/ns/1.0"
         xmlns:gap="http://phonegap.com/ns/1.0"
@@ -21,12 +21,15 @@
     <preference name="UIWebViewBounce" value="false" />
     <preference name="DisallowOverscroll" value="true" />
 
+
     <gap:plugin name="com.ionic.keyboard" />
-    <gap:plugin name="org.apache.cordova.camera" />
+    <gap:plugin name="cordova-plugin-camera" />
+    <gap:plugin name="cordova-plugin-statusbar" />
+    <gap:plugin name="cordova-plugin-file" />
     <gap:plugin name="org.apache.cordova.console" />
     <gap:plugin name="org.apache.cordova.device" />
     <gap:plugin name="com.couchbase.lite.phonegap" />
-    <gap:plugin name="com.synconset.imageResizer" />
+    <gap:plugin name="info.protonet.imageresizer" />
 
     <gap:platform name="ios" />
 
@@ -42,7 +45,6 @@
     </feature>
 
     <platform name="ios">
-
       <icon src="icons/ios/icon-60.png" width="60" height="60" />
       <icon src="icons/ios/icon-60@2x.png" width="120" height="120" />
 
